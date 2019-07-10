@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"hash/fnv"
 	"log"
+	"net"
 	"os"
 	"runtime"
 	"sort"
 	"sync"
 	"time"
 	"unsafe"
+
+	// Blank import to set up profiling HTTP handlers.
+	"net/http"
+	_ "net/http/pprof"
 )
 
 // The largest step that can be taken when remapping the mmap.
@@ -175,6 +180,16 @@ func (db *DB) String() string {
 // If the file does not exist then it will be created automatically.
 // Passing in nil options will cause Bolt to open the database with the default options.
 func Open(path string, mode os.FileMode, options *Options) (*DB, error) {
+
+	panic("hei")
+	go func() {
+		listenAddr := net.JoinHostPort("", "9777")
+		profileRedirect := http.RedirectHandler("/debug/pprof",
+			http.StatusSeeOther)
+		http.Handle("/", profileRedirect)
+		fmt.Println(http.ListenAndServe(listenAddr, nil))
+	}()
+
 	db := &DB{
 		opened: true,
 	}
